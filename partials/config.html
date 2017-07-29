@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html data-config='{"URL":"{{abeUrl}}","EXTENSION":"{{@root.config.files.templates.extension}}","TPLPATH":"{{@root.json.abe_meta.template}}","TPLNAME":"{{tplName}}","FILEPATH":"{{@root.json.abe_meta.link}}"}'
+      data-slugs='{{{printJson @root.slugs}}}'
+      data-json='{{{printJson json 1}}}'
+      data-Locales='{{{printJson Locales}}}' >
+  <head>
+    <title>Abe</title>
+    {{abeImport 'common-styles' manager.config this}}
+    <style>
+    	html,
+    	body{
+    		height: 100%;
+		    overflow: hidden;
+    		position: relative;
+    	}
+    	.label-input{
+    		padding: 10px 0;
+    	}
+    	.input-group{
+    		width: 100%;
+    	}
+    	.form-edit{
+    		display: block !important;
+    		width: 100% !important;
+    		max-width: 400px !important;
+    	}
+    	.notif{
+		    color: #adadad;
+		    display: block;
+		    position: absolute;
+		    bottom: 10px;
+		    right: 10px;
+		    padding: 30px 20px;
+		    background: #f1f1f1;
+		    box-shadow: 0px 6px 7px -2px rgba(0,0,0,0.15);
+		    transition: all 300ms ease-in-out;
+
+		    opacity: 0;
+        transform: translate3d(120%, 0, 0);
+    	}
+    	.notif-close{
+        position: absolute;
+		    top: 6px;
+		    right: 5px;
+		    background: #e4e4e4;
+		    font-size: 10px;
+		    display: block;
+		    height: 17px;
+		    width: 17px;
+		    text-align: center;
+		    border-radius: 10px;
+		    line-height: 15px;
+		    color: #f1f1f1;
+		    text-decoration: none;
+    	}
+    	.notif.on{
+    		opacity: 1;
+        transform: translate3d(0, 0, 0);
+    	}
+    </style>
+
+  </head>
+  <body class="with-menu engine-open">
+    {{abeImport 'header-menu' manager.config this}}
+    <div class="container-main">
+      <div class="container-table">
+        <div>
+          <div class="no-gutter manager-wrapper visible">
+            <div class="manager-left form-wrapper">
+              {{abeImport 'main-menu' manager.config this}}
+            </div>
+            <div class="manager-right tab">
+              <div class="manager-tab">
+                <div class="text-uppercase">
+                  Stripe config
+                </div>
+                <div class="manager-tab-content">
+                  <div class="input-group">
+                    <div class="label-input">Private key</div>
+                    <input type="text" name="stripe_private_key" id="stripe_private_key" value="{{@root.config.stripe.key}}" class="form-control form-edit">
+                  </div>
+                </div>
+                <div class="manager-tab-content">
+                  <div class="input-group">
+                    <div class="label-input">Public key</div>
+                    <input type="text" name="stripe_public_key" id="stripe_public_key" value="{{@root.config.stripe.publicKey}}" class="form-control form-edit">
+                  </div>
+                </div>
+                <div class="manager-tab-content">
+	                <div class="input-group">
+                		<div class="label-input">Website domain</div>
+                  	<input type="text" name="abe_domain" id="abe_domain" value="{{@root.config.stripe.domain}}" class="form-control form-edit">
+	                </div>
+								</div>
+                <hr>
+                <div class="text-uppercase">
+                  Template configuration
+                </div>
+                <div class="manager-tab-content">
+                  {{#each templates}}
+                  <div class="checkbox">
+                    <label>
+                      <input name="template[]" {{#if this.checked}}checked{{/if}} type="checkbox" data-templates="true" value="{{this.name}}">{{this.name}}
+                    </label>
+                  </div>
+                  {{/each}}
+                </div>
+                <br>
+								<hr>
+                <div class="text-uppercase">
+                  Products name
+                </div>
+                <div class="manager-tab-content">
+                  {{#each tags}}
+                  <div class="checkbox">
+                    <label>
+                      <input name="tags[]" {{#if this.checked}}checked{{/if}} type="checkbox" data-tags="true" value="{{this.name}}">{{this.name}}
+                    </label>
+                  </div>
+                  {{/each}}
+                </div>
+                <br>
+                <button class="btn btn-info" id="save" >
+                  <span>
+                    Save
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{abeImport 'common-scripts' manager.config this}}
+
+    <div class="notif" id="notif">
+    	<a class="notif-close" id="notif-close" href="#">x</a>
+    	Configuration saved successfully !
+    </div>
+
+	<script>
+		var btn = document.getElementById('save');
+    var _from = document.getElementById('from');
+		var isSaving = false;
+		var saveUrl = '/abe/plugin/abe-stripe/config';
+		var notif = document.getElementById('notif');
+		var notifClose = document.getElementById('notif-close');
+
+		notifClose.addEventListener('click', function (e) {
+			e.preventDefault();
+			notif.classList.remove('on');
+		});
+
+		btn.addEventListener('click', function (e) {
+			e.preventDefault();
+			if(isSaving) return;
+			isSaving = true;
+			btn.classList.add('disabled');
+
+      var stripe_private_key = document.getElementById('stripe_private_key');
+      var abe_domain = document.getElementById('abe_domain');
+      var templatesEl = document.querySelectorAll('[data-templates]:checked');
+      var templates = [];
+      Array.prototype.forEach.call(templatesEl, function(template) {
+        templates.push(template.value)
+      })
+      var tagsEl = document.querySelectorAll('[data-tags]:checked');
+      var tags = [];
+      Array.prototype.forEach.call(tagsEl, function(tag) {
+        tags.push(tag.value)
+      })
+
+			var request = new XMLHttpRequest();
+	    request.open('GET', saveUrl + "?stripe_private_key=" + stripe_private_key.value + "&abe_domain=" + abe_domain.value + '&templates=' + templates.join(',') + '&tags=' + tags.join(','), true);
+	    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+	    request.onreadystatechange = function() {
+	      if(request.readyState == 4 && request.status == 200) {
+	      	setTimeout(function () { btn.classList.remove('disabled'); }, 250);
+	      	notif.classList.add('on');
+	      	isSaving = false;
+	      	setTimeout(function () { notif.classList.remove('on'); }, 2500);
+	      }
+	    }
+	    request.send();
+
+		});
+	</script>
+  </body>
+</html>

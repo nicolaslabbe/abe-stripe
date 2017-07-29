@@ -1,1 +1,1 @@
-# abe-stripe
+# Plugin abe-stripe for abecms
