@@ -17,6 +17,12 @@ Handlebars.registerHelper('abeStripeAttribute', function (name, obj) {
   return "abe-stripe-attribute=\"" + name + "\"";
 })
 
+var abeStripeRoot = document.querySelector('[abe-stripe-root]')
+var productId = abeStripeRoot.getAttribute('abe-stripe-product-id')
+var publicKey = abeStripeRoot.getAttribute('abe-stripe-public-key')
+
+var stripe = Stripe(publicKey);
+
 var stripeAbe = {
 	getUser: function () {
 		nanoajax.ajax({
@@ -181,9 +187,9 @@ var stripeAbe = {
 					if(typeof abeStripeTemplateSkus !== 'undefined' && abeStripeTemplateSkus !== null) {
 						this.compile(abeStripeTemplateSkus, {skus: res.product.skus.data})
 					}
-				}
-				if (res.product.skus.data.length > 0) {
-					this.updateCurrentProductSku(res.product.skus.data[0])
+					if (res.product.skus.data.length > 0) {
+						this.updateCurrentProductSku(res.product.skus.data[0])
+					}
 				}
 			} else {
 				console.log(code, codeText);

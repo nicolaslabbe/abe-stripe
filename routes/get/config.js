@@ -19,11 +19,14 @@ var route = function route(req, res, next, abe) {
 
   if(req.query.stripe_private_key != null) {
 
+    if (!abe.config.stripe) {
+      abe.config.stripe = {}
+    }
     abe.config.stripe.domain = req.query.abe_domain;
+    abe.config.stripe.debug = req.query.stripe_debug === "true" ? true : false;
     abe.config.stripe.key = req.query.stripe_private_key;
     abe.config.stripe.publicKey = req.query.stripe_public_key;
-    abe.config.stripe.templates = req.query.templates.split(',');
-    abe.config.stripe.tags = req.query.tags.split(',');
+    abe.config.stripe.templates = req.query.templates ? req.query.templates.split(',') : [];
 
     var json
     try {
@@ -32,11 +35,14 @@ var route = function route(req, res, next, abe) {
       json = {}
     }
 
+    if (!json.stripe) {
+      json.stripe = {}
+    }
     json.stripe.domain = req.query.abe_domain;
+    json.stripe.debug = req.query.stripe_debug === "true" ? true : false;
     json.stripe.key = req.query.stripe_private_key;
     json.stripe.publicKey = req.query.stripe_public_key;
-    json.stripe.templates = req.query.templates.split(',');
-    json.stripe.tags = req.query.tags.split(',');
+    json.stripe.templates = req.query.templates ? req.query.templates.split(',') : [];
 
     fs.writeFileSync(abe.config.root + '/abe.json', JSON.stringify(json, null, 4), 'utf8');
     res.json({'success': true});
@@ -44,7 +50,6 @@ var route = function route(req, res, next, abe) {
   }
 
   var templates = []
-  var tags = []
   var pathTemplates = path.join(
     abe.config.root,
     abe.config.themes.path,
@@ -59,24 +64,12 @@ var route = function route(req, res, next, abe) {
         .then(function (templatesText) {
 
           Array.prototype.forEach.call(templatesText, (templateText) => {
-
-            if (templateText.template.indexOf('{{abe') > -1) {
-              var abeTags = abe.cmsData.regex.getTagAbeWithType(templateText.template, 'text')
-              // var tags = abe.cmsData.regex.getAllAbeHtmlTag(templateText.template)
-              Array.prototype.forEach.call(abeTags, (abeTag) => {
-                var abeTagName = abe.cmsData.regex.getAttr(abeTag, 'key')
-                if (tags.indexOf(abeTagName) === -1) {
-                  tags.push({
-                    checked: false,
-                    name: abeTagName
-                  })
-                }
+            if (abe.config.stripe) {
+              templates.push({
+                checked: (abe.config.stripe.templates.indexOf(templateText.name) > -1) ? true : false,
+                name: templateText.name
               })
             }
-            templates.push({
-              checked: (abe.config.stripe.templates.indexOf(templateText.name) > -1) ? true : false,
-              name: templateText.name
-            })
           })
 
 
@@ -88,7 +81,6 @@ var route = function route(req, res, next, abe) {
             config: abe.config,
             user: res.user,
             templates: templates,
-            tags: tags,
             isPageConfigStripe: true
           })
           res.send(tmp);

@@ -46,16 +46,17 @@ function prepareTemplate(abe) {
   }
   templateStripe += "{{/each}}\n";
   
-  templateBeforeBodyTag = "<script src=\"https://js.stripe.com/v3/\"></script>\n"
-  templateBeforeBodyTag += "<script>\n"
-  templateBeforeBodyTag += "var stripeProductId = '{{@root.stripeProduct.id}}';\n"
-  templateBeforeBodyTag += "var stripe = Stripe('" + abe.config.stripe.publicKey + "');\n"
-  templateBeforeBodyTag += frontScript + "\n"
-  templateBeforeBodyTag += "</script>\n"
+  templateBeforeBodyTag = "<div abe-stripe-root=\"true\""
+    + " abe-stripe-product-id=\"{{@root.stripeProduct.id}}\""
+    + " abe-stripe-public-key=\"" + abe.config.stripe.publicKey + "\"></div>\n";
+  templateBeforeBodyTag += "<script src=\"https://js.stripe.com/v3/\"></script>\n"
+  templateBeforeBodyTag += "<script src=\"/abe-stripe.js\"></script>\n"
+  
 }
 
 var hooks = {
   afterHandlebarsHelpers: function (Handlebars, abe) {
+
     Handlebars.registerHelper('abeStripe', function (name, obj) {
       var text = '<script id="abe-stripe-template-' + name + '" abe-stripe-template-' + name + ' type="text/x-handlebars-template">'
       text += obj.fn(this).replace(/\[\[/g, '{{').replace(/\]\]/g, '}}')
@@ -82,6 +83,12 @@ var hooks = {
     var frontScriptAbeStripe = path.join(__dirname, '..', 'custom', 'stripe-abe.js')
     if(abe.coreUtils.file.exist(frontScriptAbeStripe)) {
       frontScript = fs.readFileSync(frontScriptAbeStripe, 'utf-8')
+
+      fs.writeFileSync(
+        path.join(abe.config.root, abe.config.publish.url, 'abe-stripe.js'),
+        frontScript,
+        { space: 2, encoding: 'utf-8' }
+      )
     }
 
     var refFilePathAttributes = path.join(abe.config.root, 'reference', 'abe-stripe-attributes.json')
@@ -95,12 +102,11 @@ var hooks = {
     }
 
     if (abe.config.stripe) {
-      Api.init(abe.config.stripe.key, abe.config.stripe.debug === true)
+      Api.init(abe.config.stripe.key, abe.config.stripe.debug === true, abe)
     }else {
       console.log('Cannot read ./abe.json stripe config')
+      return
     }
-
-    prepareTemplate(abe);
 
     return Handlebars
   },
@@ -122,6 +128,7 @@ var hooks = {
   },
   afterGetTemplate: function (text, abe) {
     if (abe.config.stripe.templates.indexOf(currentTemplate) > -1) {
+      prepareTemplate(abe);
       // text = templateStripe + text.replace('</body>', templateBeforeBodyTag + '</body>')
       text = templateStripe + text
     }

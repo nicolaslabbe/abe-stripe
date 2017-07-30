@@ -4,18 +4,9 @@ var stripeHelper = require('./stripeHelper');
 var debug = false;
 
 var Api = {
-  init: function (key, debug) {
+  init: function (key, debug, abe) {
     stripeHelper.Helper.init(key)
-    if (debug) {
-      debug = true;
-      stripeHelper.Helper.debug()
-    }
-  },
-  reject(fn, err) {
-    if (debug) {
-      console.log('ERROR', err)
-    }
-    fn(err);
+    Utils.setDebug(debug, abe);
   },
   createProduct: function(obj) {
     return new Promise(function(resolve, reject) {
@@ -27,11 +18,11 @@ var Api = {
                 stripeHelper.Product.retrieve(product.id)
                   .then(
                     function (product) { resolve(product) }.bind(this),
-                    function (err) { this.reject(reject, err) }.bind(this))
+                    function (err) { Utils.error(reject, err) }.bind(this))
               }.bind(this),
-              function (err) { this.reject(reject, err) }.bind(this))
+              function (err) { Utils.error(reject, err) }.bind(this))
         }.bind(this),
-        function (err) { this.reject(reject, err) }.bind(this))
+        function (err) { Utils.error(reject, err) }.bind(this))
     }.bind(this));
   },
   updateProduct: function(obj) {
@@ -55,7 +46,7 @@ var Api = {
                       // ok
                     }.bind(this),
                     function (err) {
-                      this.reject(reject, err)
+                      Utils.error(reject, err)
                     }.bind(this)))
                 }else {
                   itemSku.product = productId
@@ -64,11 +55,11 @@ var Api = {
                       skuIdsUpdated.push(sku.id)
                     }.bind(this),
                     function (err) {
-                      this.reject(reject, err)
+                      Utils.error(reject, err)
                     }.bind(this)))
                 }
               }.bind(this),
-              function (err) { this.reject(reject, err) }.bind(this)))
+              function (err) { Utils.error(reject, err) }.bind(this)))
           }.bind(this))
 
           Promise.all(promises)
@@ -85,15 +76,15 @@ var Api = {
                   stripeHelper.Product.retrieve(productId)
                       .then(
                         function (product) { resolve(product) }.bind(this),
-                        function (err) { this.reject(reject, err) }.bind(this))
+                        function (err) { Utils.error(reject, err) }.bind(this))
                 }.bind(this),
                 function (err) {
-                  this.reject(reject, err)
+                  Utils.error(reject, err)
                 }.bind(this))
               }.bind(this))
           
         }.bind(this),
-        function (err) { this.reject(reject, err) }.bind(this))
+        function (err) { Utils.error(reject, err) }.bind(this))
     }.bind(this));
   },
   createOrUpdateProduct: function(json, filepath, productAttributes, domain) {
@@ -113,7 +104,7 @@ var Api = {
           resolve(result);
         }.bind(this),
         function (err) {
-          this.reject(reject, err);
+          Utils.error(reject, err);
         }.bind(this))
 
     }.bind(this));
@@ -131,7 +122,7 @@ var Api = {
               .then(function () {
                 
               }.bind(this),
-              function (err) { this.reject(reject, err); }.bind(this)))
+              function (err) { Utils.error(reject, err); }.bind(this)))
           })
         }
 
@@ -143,10 +134,10 @@ var Api = {
                 Utils.writeFileSync(filepath, product);
                 resolve(true);
               }.bind(this),
-              function (err) { this.reject(reject, err); }.bind(this))
+              function (err) { Utils.error(reject, err); }.bind(this))
         }.bind(this))
       }else {
-        this.reject(reject, {error: 'no product'});
+        Utils.error(reject, {error: 'no product'});
       }
     }.bind(this))
   },

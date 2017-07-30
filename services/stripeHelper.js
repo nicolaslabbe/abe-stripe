@@ -9,9 +9,6 @@ var Helper = {
   init: function (key) {
     stripe = require("stripe")(key);
   },
-  debug: function () {
-    debug = true;
-  },
   isReady: function () {
     if(typeof stripe !== 'undefined' && stripe !== null) {
       return true;
@@ -30,7 +27,7 @@ var Order = {
       stripe.orders.create(obj,
       function(err, order) {
         if (!err) {
-          if (debug) console.log('ORDER CREATE:', order.id, 'https://dashboard.stripe.com/test/orders/' + order.id)
+          Utils.debug('ORDER CREATE:', order.id, 'https://dashboard.stripe.com/test/orders/' + order.id)
           resolve(order)
         }else {
           reject({func: 'Order.create', err: err})
@@ -49,7 +46,7 @@ var Order = {
       stripe.orders.pay(orderId, user,
         function(err, order) {
           if (!err) {
-            if (debug) console.log('ORDER CHECKOUT:', order.id, 'https://dashboard.stripe.com/test/orders/' + order.id)
+            Utils.debug('ORDER CHECKOUT:', order.id, 'https://dashboard.stripe.com/test/orders/' + order.id)
             resolve(order);
           }else {
             reject({func: 'Order.checkout', err: err})
@@ -65,7 +62,7 @@ var Order = {
       stripe.orders.retrieve(id,
       function(err, order) {
         if (!err) {
-          if (debug) console.log('ORDER RETRIEVE:', order.id, 'https://dashboard.stripe.com/test/orders/' + order.id)
+          Utils.debug('ORDER RETRIEVE:', order.id, 'https://dashboard.stripe.com/test/orders/' + order.id)
           resolve(order)
         }else {
           reject({func: 'User.retrieve', err: err})
@@ -85,7 +82,7 @@ var User = {
       },
       function(err, customer) {
         if (!err) {
-          if (debug) console.log('USER CREATE:', customer.id, 'https://dashboard.stripe.com/test/customers/' + customer.id)
+          Utils.debug('USER CREATE:', customer.id, 'https://dashboard.stripe.com/test/customers/' + customer.id)
           resolve(customer)
         }else {
           reject({func: 'User.create', err: err})
@@ -101,7 +98,7 @@ var User = {
       stripe.customers.retrieve(id,
       function(err, customer) {
         if (!err) {
-          if (debug) console.log('USER RETRIEVE:', customer.id, 'https://dashboard.stripe.com/test/customers/' + customer.id)
+          Utils.debug('USER RETRIEVE:', customer.id, 'https://dashboard.stripe.com/test/customers/' + customer.id)
           resolve(customer)
         }else {
           reject({func: 'User.retrieve', err: err})
@@ -118,7 +115,7 @@ var User = {
       stripe.customers.update(id, obj,
         function (err, customer) {
           if (!err) {
-            if (debug) console.log('USER UPDATE:', id, 'https://dashboard.stripe.com/test/customers/' + id)
+            Utils.debug('USER UPDATE:', id, 'https://dashboard.stripe.com/test/customers/' + id)
             resolve()
           }else {
             reject({func: 'User.update', err: err})
@@ -137,7 +134,7 @@ var Product = {
       stripe.products.create(obj,
       function(err, product) {
         if (!err) {
-          if (debug) console.log('PRODUCT CREATE:', product.id, 'https://dashboard.stripe.com/test/products/' + product.id)
+          Utils.debug('PRODUCT CREATE:', product.id, 'https://dashboard.stripe.com/test/products/' + product.id)
           resolve(product)
         }else {
           reject({func: 'Product.create', err: err})
@@ -154,7 +151,7 @@ var Product = {
       stripe.products.update(id, obj,
         function (err) {
           if (!err) {
-            if (debug) console.log('PRODUCT UPDATE:', id, 'https://dashboard.stripe.com/test/products/' + id)
+            Utils.debug('PRODUCT UPDATE:', id, 'https://dashboard.stripe.com/test/products/' + id)
             resolve()
           }else {
             reject({func: 'Product.update', err: err})
@@ -170,7 +167,7 @@ var Product = {
       stripe.products.retrieve(id,
         function(err, product) {
           if (!err) {
-            if (debug) console.log('PRODUCT RETRIEVE:', product.id, 'https://dashboard.stripe.com/test/products/' + product.id)
+            Utils.debug('PRODUCT RETRIEVE:', product.id, 'https://dashboard.stripe.com/test/products/' + product.id)
             resolve(product)
           }else {
             reject({func: 'Product.retrieve', err: err})
@@ -207,7 +204,7 @@ var Skus = {
 
         Promise.all(promises)
           .then(function() {
-              if (debug) console.log('SKUS CREATE:')
+              Utils.debug('SKUS CREATE:')
               resolve(skusCreated)
           }.bind(this))
     }.bind(this))
@@ -224,7 +221,7 @@ var Skus = {
       function(err, skus) {
         if (!err) {
           if (skus.data.length > 0) {
-            if (debug) console.log('SKUS FIND:', skus.data.length)
+            Utils.debug('SKUS FIND:', skus.data.length)
             resolve(skus.data)
           }else {
             resolve([])
@@ -246,10 +243,10 @@ var Sku = {
       stripe.skus.create(obj,
       function(err, sku) {
         if (!err) {
-          if (debug) console.log('SKU CREATE', sku.id, 'https://dashboard.stripe.com/test/products/' + sku.product)
+          Utils.debug('SKU CREATE', sku.id, 'https://dashboard.stripe.com/test/products/' + sku.product)
           resolve(sku)
         }else {
-          if (debug) console.log('SKU CREATE', err)
+          Utils.debug('SKU CREATE', err)
           reject({func: 'Sku.create', err: err})
         }
       }.bind(this));
@@ -269,10 +266,10 @@ var Sku = {
       stripe.skus.update(id, obj,
         function (err) {
           if (!err) {
-            if (debug) console.log('SKU UPDATE', id, 'https://dashboard.stripe.com/test/products/' + id)
+            Utils.debug('SKU UPDATE', id, 'https://dashboard.stripe.com/test/products/' + id)
             resolve()
           }else {
-            if (debug) console.log('ERROR SKU UPDATE', err)
+            Utils.debug('ERROR SKU UPDATE', err)
             reject({func: 'Sku.update', err: err})
           }
         }.bind(this))
@@ -286,7 +283,7 @@ var Sku = {
         stripe.skus.retrieve(id,
           function(err, sku) {
             if (!err) {
-              if (debug) console.log('SKU RETRIEVE', sku.id, 'https://dashboard.stripe.com/test/products/' + sku.product)
+              Utils.debug('SKU RETRIEVE', sku.id, 'https://dashboard.stripe.com/test/products/' + sku.product)
               resolve(sku)
             }else {
               reject({func: 'Sku.retrieve', err: err})
@@ -311,7 +308,7 @@ var Sku = {
       function(err, skus) {
         if (!err) {
           if (skus.data.length > 0) {
-            if (debug) console.log('SKU FIND', skus.data[0].id, 'https://dashboard.stripe.com/test/products/' + skus.data[0].id)
+            Utils.debug('SKU FIND', skus.data[0].id, 'https://dashboard.stripe.com/test/products/' + skus.data[0].id)
             resolve(skus.data[0])
           }else {
             resolve(null)

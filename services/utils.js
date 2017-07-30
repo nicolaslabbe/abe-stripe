@@ -3,8 +3,25 @@ var path = require("path");
 var fs = require("fs");
 var mkdirp = require("mkdirp");
 var currentTemplate = null;
+var debug = false;
+var abe = null;
 
 var Utils = {
+  setDebug: function(bool, abe) {
+    debug = bool;
+  },
+  debug: function() {
+    console.log(arguments);
+  },
+  error: function(fn, err) {
+    if (debug) {
+      var logsFile = path.join(abe.config.root, 'logs', 'stripe-errors.log');
+      var logs = Utils.readFileSync(logsFile, result);
+      logs = JSON.stringify(err) + logs;
+      Utils.writeFileSync(logsFile, logs);
+    }
+    fn(err);
+  },
   exist: function (filepath) {
     try {
       var stat = fs.statSync(filepath)

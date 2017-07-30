@@ -108,16 +108,14 @@
                 <br>
 								<hr>
                 <div class="text-uppercase">
-                  Products name
+                  Config
                 </div>
                 <div class="manager-tab-content">
-                  {{#each tags}}
                   <div class="checkbox">
                     <label>
-                      <input name="tags[]" {{#if this.checked}}checked{{/if}} type="checkbox" data-tags="true" value="{{this.name}}">{{this.name}}
+                      <input name="stripe_debug" id="stripe_debug" {{#if @root.config.stripe.debug}}checked{{/if}} type="checkbox" data-debug="true">Debug
                     </label>
                   </div>
-                  {{/each}}
                 </div>
                 <br>
                 <button class="btn btn-info" id="save" >
@@ -158,20 +156,22 @@
 			btn.classList.add('disabled');
 
       var stripe_private_key = document.getElementById('stripe_private_key');
+      var stripe_public_key = document.getElementById('stripe_public_key');
+      var stripe_debug = document.getElementById('stripe_debug').checked;
       var abe_domain = document.getElementById('abe_domain');
       var templatesEl = document.querySelectorAll('[data-templates]:checked');
       var templates = [];
       Array.prototype.forEach.call(templatesEl, function(template) {
         templates.push(template.value)
       })
-      var tagsEl = document.querySelectorAll('[data-tags]:checked');
-      var tags = [];
-      Array.prototype.forEach.call(tagsEl, function(tag) {
-        tags.push(tag.value)
-      })
 
 			var request = new XMLHttpRequest();
-	    request.open('GET', saveUrl + "?stripe_private_key=" + stripe_private_key.value + "&abe_domain=" + abe_domain.value + '&templates=' + templates.join(',') + '&tags=' + tags.join(','), true);
+	    request.open('GET', saveUrl
+        + "?stripe_private_key=" + stripe_private_key.value
+        + "&stripe_public_key=" + stripe_public_key.value
+        + "&abe_domain=" + abe_domain.value
+        + "&stripe_debug=" + stripe_debug
+        + '&templates=' + templates.join(','));
 	    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 	    request.onreadystatechange = function() {
 	      if(request.readyState == 4 && request.status == 200) {
